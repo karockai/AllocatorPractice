@@ -1,4 +1,5 @@
 /*
+ * EXPLICIT - Address 순으로 정렬
  * mm-naive.c - The fastest, least memory-efficient malloc package.
  *
  * In this naive approach, a block is allocated by simply incrementing
@@ -317,8 +318,7 @@ void *compare(void *bp, void *next_bp)
     return next_bp;
 }
 
-// new_bp가 아무것도 안 이어졌을 때,
-// prev와 next 사이에 이어주는 작업
+// 새로운 가용 블록을 next_bp의 PREV에 이어주기 위한 작업. 
 void Insert_Block(void *new_bp, void *next_bp)
 {
     // printf("Insert Block, new_bp: %p, next_bp : %p\n", new_bp, next_bp);
@@ -452,6 +452,7 @@ void *mm_realloc(void *bp, size_t size)
 }
 
 /* ----------------------------------- Missing_Connect  -------------------------------------*/
+// bp의 블록 PREV, NEXT를 끊어주고, PREV 블록과 NEXT 블록을 이어준다.
 void Cut_Connection(void *bp)
 {
 

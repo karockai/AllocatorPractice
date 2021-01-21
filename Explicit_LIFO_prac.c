@@ -1,4 +1,5 @@
 /*
+ * EXPLICIT - LIFO 구성
  * mm-naive.c - The fastest, least memory-efficient malloc package.
  *
  * In this naive approach, a block is allocated by simply incrementing
@@ -297,26 +298,7 @@ void mm_free(void *bp)
     void *new_bp = coalesce(bp);
 }
 
-// compare는 반환된 블록의 크기와 연결 리스트 상의 블록과 비교한다.
-// void *compare(void *bp, void *next_bp)
-// {
-//     // printf("compare, next_bp : %p\n", next_bp);
-//     while (!(GET(NEXT(next_bp)) == NULL))
-//     {
-//         if (next_bp > bp)
-//         {
-//             return next_bp;
-//         }
-//         next_bp = GET(NEXT(next_bp));
-//         // printf("next_bp : %p\n", next_bp);
-//     }
-
-//     // 다음 자리에 next_bp가 온다는 뜻이다
-//     return next_bp;
-// }
-
-// new_bp가 아무것도 안 이어졌을 때,
-// prev와 next 사이에 이어주는 작업
+// 새로운 가용 블록을 next_bp의 PREV에 이어주기 위한 작업. 
 void Insert_Block(void *new_bp, void *next_bp)
 {
     // printf("Insert Block, new_bp: %p, next_bp : %p\n", new_bp, next_bp);
@@ -431,8 +413,10 @@ void *mm_realloc(void *bp, size_t size)
     void *old_bp = bp;
     void *new_bp;
     size_t copySize;
+
     // 다른데다가 다시 할당 받기
     new_bp = mm_malloc(size);
+
     // 실패하면 NULL 리턴
     if (new_bp == NULL)
         return NULL;
@@ -444,22 +428,21 @@ void *mm_realloc(void *bp, size_t size)
     if (size < copySize)
         copySize = size;
     memcpy(new_bp, old_bp, copySize);
+
     // 기존 사이즈는 삭제
     mm_free(old_bp);
     return new_bp;
 }
 
 /* ----------------------------------- Missing_Connect  -------------------------------------*/
+// bp의 블록 PREV, NEXT를 끊어주고, PREV 블록과 NEXT 블록을 이어준다.
 void Cut_Connection(void *bp)
 {
-
     void* next_bp = GET(NEXT(bp));
     void* prev_bp = GET(PREV(bp));
 
     PUT(NEXT(prev_bp), next_bp);
     PUT(PREV(next_bp), prev_bp);
-
-
     // PUT(PREV(bp), 0);
     // PUT(NEXT(bp), 0);
     return;
