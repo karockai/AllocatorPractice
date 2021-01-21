@@ -70,11 +70,12 @@ team_t team = {
 // 해당 블록에
 
 //blkp = block pointer
-// 다음 블록의 주소값을 반환, 헤더에서 내 사이즈 더해주고 word를 빼줌.
+// 우측 블록의 주소값을 반환, 헤더에서 내 사이즈 더해주고 word를 빼줌.
 #define NEXT_BLKP(bp) ((char *)(bp) + GET_SIZE(((char *)(bp)-WSIZE)))
-// 전 블록의 주소값을 반환, 헤더에서 double word를 빼고 전 블록의 사이즈를 알아낸다.
+// 왼측 블록의 주소값을 반환, 헤더에서 double word를 빼고 전 블록의 사이즈를 알아낸다.
 #define PREV_BLKP(bp) ((char *)(bp) - GET_SIZE(((char *)(bp)-DSIZE)))
 
+// 
 #define PREV(bp) ((char *)(bp))
 #define NEXT(bp) ((char *)(bp) + WSIZE)
 
@@ -105,28 +106,28 @@ int mm_init(void)
     // heap:0에 DSIZE와 allocated 넣음 (PROLOGUE HEADER)
     PUT(heap_listp + (1 * WSIZE), PACK(DSIZE * 2, 1));
 
-    // heap:1에는 PREV가 들어간다.
+    // heap:2에는 PREV가 들어간다.
     // Prologue 이므로 PREV는 NULL을 해준다.
     PUT(heap_listp + (2 * WSIZE), NULL);
 
-    // heap:2에는 NEXT가 들어간다.
+    // heap:3에는 NEXT가 들어간다.
     PUT(heap_listp + (3 * WSIZE), heap_listp + (6 * WSIZE));
 
-    // heap:3에는 FOOTER가 들어간다.
+    // heap:4에는 FOOTER가 들어간다.
     PUT(heap_listp + (4 * WSIZE), PACK(DSIZE * 2, 1));
 
     /* ------------------- Epilogue ------------------ */
-    // heap:4에 DSIZE와 allocated 넣음 (PROLOGUE HEADER)
+    // heap:5에 DSIZE와 allocated 넣음 (PROLOGUE HEADER)
     PUT(heap_listp + (5 * WSIZE), PACK(DSIZE * 2, 1));
 
-    // heap:5에는 PREV가 들어간다.
+    // heap:6에는 PREV가 들어간다.
     PUT(heap_listp + (6 * WSIZE), heap_listp + 2 * WSIZE);
 
     // Epilogue 이므로 NEXT는 NULL을 해준다.
-    // heap:6에는 NEXT가 들어간다.
+    // heap:7에는 NEXT가 들어간다.
     PUT(heap_listp + (7 * WSIZE), NULL);
 
-    // heap:7에는 FOOTER가 들어간다.
+    // heap:8에는 FOOTER가 들어간다.
     PUT(heap_listp + (8 * WSIZE), PACK(DSIZE * 2, 1));
 
     // heap_lisp 포인터를 옮겨줌
@@ -168,13 +169,10 @@ static void *extend_heap(size_t words)
     PUT(PREV(EBP), last_free);
     PUT(NEXT(EBP), NULL);
     PUT(FTRP(EBP), PACK(DSIZE * 2, 1));
-    // extend를 실행했다는 것은, extend size보다 큰 블록이 없다는 뜻이다.
+    // 가용리스트의 마지막 블록을 epilogue에 이어준다.
     PUT(NEXT(last_free), EBP);
-    // PUT(PREV(bp), 0);
-    // PUT(NEXT(bp), 0);
 
-    // 만약 전 block이 프리였다면 합친다.
-    // return coalesce(bp);
+    // extend를 실행하고 좌측에 가용블록이 있는지 확인한다.
     return coalesce(bp);
 }
 
@@ -228,7 +226,7 @@ static void *find_fit(size_t asize)
     // printf("heaplistp: %p\n", heap_listp);
     // printf("NEXT of heaplistp : %p\n", bp);
     // printf("nextbp : %p\n", GET(NEXT(bp)));
-    // bp 처음부터 블록단위로 for문 0(epilogue)
+    // 가용리스트를 돌면서 맞는 사이즈를 찾는다
     while (GET(NEXT(bp)) != NULL)
     {
         // printf("%p, %p/n", bp, NEXT(bp));
