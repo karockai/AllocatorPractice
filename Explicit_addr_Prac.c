@@ -1,5 +1,5 @@
 /*
- * EXPLICIT - Address ìˆœìœ¼ë¡œ ì •ë ¬
+ * EXPLICIT - Address ¼øÀ¸·Î Á¤·Ä
  * mm-naive.c - The fastest, least memory-efficient malloc package.
  *
  * In this naive approach, a block is allocated by simply incrementing
@@ -40,42 +40,43 @@ team_t team = {
 // [bytes] double word size
 #define DSIZE 8
 
-// [bytes] extend heap by this amount í•˜ë‚˜ì˜ í˜ì´ì§€ëŠ” 4[kb]
+// [bytes] extend heap by this amount ÇÏ³ªÀÇ ÆäÀÌÁö´Â 4[kb]
 #define CHUNKSIZE (1 << 12)
 
-// max ê°’ ë°˜í™˜
+// max °ª ¹İÈ¯
 #define MAX(x, y) ((x) > (y) ? (x) : (y))
 
-// size ë’¤ì˜ 000 ê³µê°„ì— allocation ì—¬ë¶€ë¥¼ ì €ì¥í•œ ë¹„íŠ¸ë¥¼ ë°˜í™˜
+// size µÚÀÇ 000 °ø°£¿¡ allocation ¿©ºÎ¸¦ ÀúÀåÇÑ ºñÆ®¸¦ ¹İÈ¯
 #define PACK(size, alloc) ((size) | (alloc))
 
-// ì£¼ì†Œê°’ì—ì„œ ê°’ ì½ì–´ì˜´
+// ÁÖ¼Ò°ª¿¡¼­ °ª ÀĞ¾î¿È
 #define GET(p) (*(unsigned int *)(p))
 
-// ì£¼ì†Œê°’ì—ë‹¤ ê°’ ì”€
+// ÁÖ¼Ò°ª¿¡´Ù °ª ¾¸
 #define PUT(p, val) (*(unsigned int *)(p) = (val))
 
-// ë¸”ë¡ ì‚¬ì´ì¦ˆ ì½ì–´ì˜´
+// ºí·Ï »çÀÌÁî ÀĞ¾î¿È
 #define GET_SIZE(p) (GET(p) & ~0x7)
 
-// í• ë‹¹ ì—¬ë¶€ë¥¼ ì½ì–´ì˜´
+// ÇÒ´ç ¿©ºÎ¸¦ ÀĞ¾î¿È
 #define GET_ALLOC(p) (GET(p) & 0x1)
 
 //bp = block pointer
-// í—¤ë”ì˜ ì£¼ì†Œê°’ì„ ë°˜í™˜
+// Çì´õÀÇ ÁÖ¼Ò°ªÀ» ¹İÈ¯
 #define HDRP(bp) ((char *)(bp)-WSIZE)
 
-// í‘¸í„°ì˜ ì£¼ì†Œê°’ì„ ë°˜í™˜, í—¤ë”ì—ì„œ ì‚¬ì´ì¦ˆë¥¼ ì•ˆ ë‹¤ìŒ double wordë¥¼ ë¹¼ì¤Œ.
+// ÇªÅÍÀÇ ÁÖ¼Ò°ªÀ» ¹İÈ¯, Çì´õ¿¡¼­ »çÀÌÁî¸¦ ¾È ´ÙÀ½ double word¸¦ »©ÁÜ.
 #define FTRP(bp) ((char *)(bp) + GET_SIZE(HDRP(bp)) - DSIZE)
 
-// í•´ë‹¹ ë¸”ë¡ì—
+// ÇØ´ç ºí·Ï¿¡
 
 //blkp = block pointer
-// ë‹¤ìŒ ë¸”ë¡ì˜ ì£¼ì†Œê°’ì„ ë°˜í™˜, í—¤ë”ì—ì„œ ë‚´ ì‚¬ì´ì¦ˆ ë”í•´ì£¼ê³  wordë¥¼ ë¹¼ì¤Œ.
+// ´ÙÀ½ ºí·ÏÀÇ ÁÖ¼Ò°ªÀ» ¹İÈ¯, Çì´õ¿¡¼­ ³» »çÀÌÁî ´õÇØÁÖ°í word¸¦ »©ÁÜ.
 #define NEXT_BLKP(bp) ((char *)(bp) + GET_SIZE(((char *)(bp)-WSIZE)))
-// ì „ ë¸”ë¡ì˜ ì£¼ì†Œê°’ì„ ë°˜í™˜, í—¤ë”ì—ì„œ double wordë¥¼ ë¹¼ê³  ì „ ë¸”ë¡ì˜ ì‚¬ì´ì¦ˆë¥¼ ì•Œì•„ë‚¸ë‹¤.
+// Àü ºí·ÏÀÇ ÁÖ¼Ò°ªÀ» ¹İÈ¯, Çì´õ¿¡¼­ double word¸¦ »©°í Àü ºí·ÏÀÇ »çÀÌÁî¸¦ ¾Ë¾Æ³½´Ù.
 #define PREV_BLKP(bp) ((char *)(bp) - GET_SIZE(((char *)(bp)-DSIZE)))
 
+//***** ¹Ù·Î ¾Õ ¸ÅÅ©·ÎÀÎ NEXT_BLKP, PREV_BLKP°ú º¯¼ö ÀÌ¸§ÀÌ È¥µ¿µÉ °Í °°½À´Ï´Ù. Á¶±İ ±æÁö¸¸ NEXT_FREEBLKP ¶Ç´Â PRED, SUCC Á¤µµ·Î Áö¾ú¾îµµ ÁÁ¾ÒÀ» °Í °°½À´Ï´Ù!
 #define PREV(bp) ((char *)(bp))
 #define NEXT(bp) ((char *)(bp) + WSIZE)
 
@@ -91,10 +92,21 @@ void Cut_Connection(void *bp);
 void mm_free(void *bp);
 
 /*------------------------------------- INIT ---------------------------------*/
-// prevì™€ nextê°€ ë“¤ì–´ê°€ë¯€ë¡œ Prologue Blockì„ 4word ë°°ì¹˜í•œë‹¤.
+//***** ÀúºÎÅÍ°¡ ¸¹ÀÌ ºÎÁ·ÇØ¼­ ¸®ºä°¡ µµ¿òÀÌ µÇ¾úÀ» Áö ¸ğ¸£°Ú³×¿ä ¤¾.. 
+//***** ÀüÃ¼ÀûÀ¸·Î ÄÚµå°¡ ¸¹ÀÌ ±ò²ûÇÑ °Í °°½À´Ï´Ù. ¸ÚÀÖ½À´Ï´Ù! 
+//***** ÀÌµû ÄÚµå ¼³¸í ÇÑ¹ø µéÀ¸·¯ °¡°Ú½À´Ï´Ù. ¼ö°í ¸¹À¸¼Ì½À´Ï´Ù~ 
+
+// prev¿Í next°¡ µé¾î°¡¹Ç·Î Prologue BlockÀ» 4word ¹èÄ¡ÇÑ´Ù.
 int mm_init(void)
-{
-    // mem_sbrk í˜¸ì¶œí•´ì„œ 9W ë©”ëª¨ë¦¬ requestí•˜ëŠ” ë°, ì‹¤íŒ¨ í•˜ë©´ -1 ë¦¬í„´
+{   
+    //***** ÀÌ ºÎºĞÀº Àú¶û ´Ù¸£°Ô ±¸ÇöÇÏ¼Å¼­ È¤½Ã Á¦°¡ Àß¸ø ÀÌÇØÇÏ°í ÀÖÀ¸¸é ¸»¾¸ÇØÁÖ½Ã¸é °¨»çÇÏ°Ú½À´Ï´Ù!
+    //***** °¡¿ë ¿¬°á ¸®½ºÆ®¿¡ Ã³À½°ú ³¡ ºÎºĞ¿¡ ¹Ì¸® prologue, epilogueºí·ÏÀ» ³Ö¾î¼­ °¡ÀåÀÚ¸® Á¶°ÇÀ» ½Å°æ ¾È½áµµ µÇ°Ô ¸¸µå½Å °Í °°Àºµ¥ ¾ÆÀÌµğ¾î°¡ ÁÁÀº °Í °°½À´Ï´Ù. 
+
+    //***** ÃÑ 9W¸¦ requestÇØ¾ßÇÏ´Â °Í °°Àºµ¥ 5W¸¸ requestÇÏ´Â °Í °°½À´Ï´Ù. 
+    //***** ¾Æ·¡ 5 * WSIZE¸¦ 9 * WSIZE·Î ¹Ù²ãºÃ´Âµ¥ seg fault°¡ ¶ß³×¿ä.. 
+    //***** Âü°í·Î È¦¼ö °³ÀÇ W¸¦ ÇÒ´ç¹ŞÀ¸¸é ÁÖ¼Ò°¡ ´õºí¿öµå·Î Á¤·ÄÀÌ ¾ÈµÉ ¼öµµ ÀÖÀ» °Í °°½À´Ï´Ù. ÇÁ·Ñ·Î±× ºí·Ï ¾Õ¿¡ ÆĞµùÀ» ¾ø¾Ö¼­ Â¦¼ö °³·Î ¸ÂÃâ ¼ö ÀÖÀ» °Í °°½À´Ï´Ù. 
+
+    // mem_sbrk È£ÃâÇØ¼­ 9W ¸Ş¸ğ¸® requestÇÏ´Â µ¥, ½ÇÆĞ ÇÏ¸é -1 ¸®ÅÏ
     if ((heap_listp = mem_sbrk(5 * WSIZE)) == (void *)-1)
     {
         return -1;
@@ -103,37 +115,40 @@ int mm_init(void)
     /* ------------------- Prologue ------------------ */
     PUT(heap_listp, 0);
 
-    // heap:0ì— DSIZEì™€ allocated ë„£ìŒ (PROLOGUE HEADER)
+    // heap:0¿¡ DSIZE¿Í allocated ³ÖÀ½ (PROLOGUE HEADER)
     PUT(heap_listp + (1 * WSIZE), PACK(DSIZE * 2, 1));
 
-    // heap:1ì—ëŠ” PREVê°€ ë“¤ì–´ê°„ë‹¤.
-    // Prologue ì´ë¯€ë¡œ PREVëŠ” NULLì„ í•´ì¤€ë‹¤.
+    // heap:1¿¡´Â PREV°¡ µé¾î°£´Ù.
+    // Prologue ÀÌ¹Ç·Î PREV´Â NULLÀ» ÇØÁØ´Ù.
     PUT(heap_listp + (2 * WSIZE), NULL);
 
-    // heap:2ì—ëŠ” NEXTê°€ ë“¤ì–´ê°„ë‹¤.
+    // heap:2¿¡´Â NEXT°¡ µé¾î°£´Ù.
     PUT(heap_listp + (3 * WSIZE), heap_listp + (6 * WSIZE));
 
-    // heap:3ì—ëŠ” FOOTERê°€ ë“¤ì–´ê°„ë‹¤.
+    // heap:3¿¡´Â FOOTER°¡ µé¾î°£´Ù.
     PUT(heap_listp + (4 * WSIZE), PACK(DSIZE * 2, 1));
 
+
+    ///***** À§¿¡¼­ 5W¸¸Å­ ÇÒ´çÀ» ¹Ş¾ÒÀ¸¸é ¾Æ·¡ epilogue ¿µ¿ªÀº ÇÒ´çÀ» ¹ŞÁö ¾ÊÀº °ø°£¿¡ °ªÀ» ³Ö°í ÀÖ´Â °Í °°½À´Ï´Ù. 
+
     /* ------------------- Epilogue ------------------ */
-    // heap:4ì— DSIZEì™€ allocated ë„£ìŒ (PROLOGUE HEADER)
+    // heap:4¿¡ DSIZE¿Í allocated ³ÖÀ½ (PROLOGUE HEADER)
     PUT(heap_listp + (5 * WSIZE), PACK(DSIZE * 2, 1));
 
-    // heap:5ì—ëŠ” PREVê°€ ë“¤ì–´ê°„ë‹¤.
+    // heap:5¿¡´Â PREV°¡ µé¾î°£´Ù.
     PUT(heap_listp + (6 * WSIZE), heap_listp + 2 * WSIZE);
 
-    // Epilogue ì´ë¯€ë¡œ NEXTëŠ” NULLì„ í•´ì¤€ë‹¤.
-    // heap:6ì—ëŠ” NEXTê°€ ë“¤ì–´ê°„ë‹¤.
+    // Epilogue ÀÌ¹Ç·Î NEXT´Â NULLÀ» ÇØÁØ´Ù.
+    // heap:6¿¡´Â NEXT°¡ µé¾î°£´Ù.
     PUT(heap_listp + (7 * WSIZE), NULL);
 
-    // heap:7ì—ëŠ” FOOTERê°€ ë“¤ì–´ê°„ë‹¤.
+    // heap:7¿¡´Â FOOTER°¡ µé¾î°£´Ù.
     PUT(heap_listp + (8 * WSIZE), PACK(DSIZE * 2, 1));
 
-    // heap_lisp í¬ì¸í„°ë¥¼ ì˜®ê²¨ì¤Œ
+    // heap_lisp Æ÷ÀÎÅÍ¸¦ ¿Å°ÜÁÜ
     heap_listp += DSIZE;
 
-    // chunk size í™•ì¸(ë°›ì„ìˆ˜ ìˆëŠ” ì‚¬ì´ì¦ˆì¸ì§€)??
+    // chunk size È®ÀÎ(¹ŞÀ»¼ö ÀÖ´Â »çÀÌÁîÀÎÁö)??
     if (extend_heap(CHUNKSIZE / WSIZE) == NULL)
     {
         return -1;
@@ -146,14 +161,14 @@ static void *extend_heap(size_t words)
     // printf("extend heap\n");
     char *bp;
     size_t size;
-    // ì§ìˆ˜ë¡œ ë§Œë“¬
+    // Â¦¼ö·Î ¸¸µë
     size = (words % 2) ? (words + 1) * WSIZE : words * WSIZE;
-    // ë„ˆë¬´ ì»¤ì„œ í• ë‹¹ ëª»ë°›ìœ¼ë©´ return -1
+    // ³Ê¹« Ä¿¼­ ÇÒ´ç ¸ø¹ŞÀ¸¸é return -1
     
     if ((long)(bp = mem_sbrk(size)) == -1)
         return NULL;
     // printf("sbrk, bp = %p\n", bp);
-    // í˜„ì¬ bpê°€ ê°€ìš© ë¸”ë¡ì˜ ë§¨ ì²˜ìŒì´ë¯€ë¡œ í•´ë‹¹ ë¸”ë¡ì˜ bpìë¦¬ë¡œ ì˜®ê²¨ì¤€ë‹¤
+    // ÇöÀç bp°¡ °¡¿ë ºí·ÏÀÇ ¸Ç Ã³À½ÀÌ¹Ç·Î ÇØ´ç ºí·ÏÀÇ bpÀÚ¸®·Î ¿Å°ÜÁØ´Ù
     bp = bp + 4;
 
     // block header free
@@ -163,18 +178,19 @@ static void *extend_heap(size_t words)
 
     void* last_free = GET(PREV(bp));
 
-    // ìƒˆë¡œìš´ epilogue ë°°ì¹˜
+    //***** size ¸¸Å­ÀÇ ¸Ş¸ğ¸®¸¦ ÇÒ´ç ¹Ş¾Æ¼­ size¸¸Å­ ´Ù Ã¤¿öÁÖ¸é »õ·Î¿î epligue ºí·ÏÀ» À§ÇÑ ¿µ¿ªÀº ¾øÀ» °Í °°Àºµ¥ À½.. ÀÌµû ¼³¸í µéÀ¸·¯ °¡°Ú½À´Ï´Ù~
+    // »õ·Î¿î epilogue ¹èÄ¡
     void *EBP = NEXT_BLKP(bp);
     PUT(HDRP(EBP), PACK(DSIZE * 2, 1));
     PUT(PREV(EBP), last_free);
     PUT(NEXT(EBP), NULL);
     PUT(FTRP(EBP), PACK(DSIZE * 2, 1));
-    // extendë¥¼ ì‹¤í–‰í–ˆë‹¤ëŠ” ê²ƒì€, extend sizeë³´ë‹¤ í° ë¸”ë¡ì´ ì—†ë‹¤ëŠ” ëœ»ì´ë‹¤.
+    // extend¸¦ ½ÇÇàÇß´Ù´Â °ÍÀº, extend sizeº¸´Ù Å« ºí·ÏÀÌ ¾ø´Ù´Â ¶æÀÌ´Ù.
     PUT(NEXT(last_free), EBP);
     PUT(PREV(bp), 0);
     PUT(NEXT(bp), 0);
 
-    // ë§Œì•½ ì „ blockì´ í”„ë¦¬ì˜€ë‹¤ë©´ í•©ì¹œë‹¤.
+    // ¸¸¾à Àü blockÀÌ ÇÁ¸®¿´´Ù¸é ÇÕÄ£´Ù.
     // return coalesce(bp);
     return coalesce(bp);
 }
@@ -184,23 +200,23 @@ void *mm_malloc(size_t size)
 {
     // printf("malloc----------------------------------------------------------------------------------\n");
     // printf("size needed:%d\n",size);
-    // ìƒì„±í•  size
+    // »ı¼ºÇÒ size
     size_t asize;
-    // ë§Œì•½ chunksizeë¥¼ ë„˜ê¸´ ì‚¬ì´ì¦ˆ
+    // ¸¸¾à chunksize¸¦ ³Ñ±ä »çÀÌÁî
     size_t extendsize;
     char *bp;
-    // ë§Œì•½ ì…ë ¥ë°›ì€ ì‚¬ì´ì¦ˆê°€ 0 ì´ë©´ ë¬´ì‹œ
+    // ¸¸¾à ÀÔ·Â¹ŞÀº »çÀÌÁî°¡ 0 ÀÌ¸é ¹«½Ã
     if (size == 0)
         return NULL;
 
-    // ë§Œì•½ ì…ë ¥ë°›ì€ ì‚¬ì´ì¦ˆê°€ dsizeë³´ë‹¤ ì‘ì•„ë„ 4sizeë¡œ ìƒì„±
+    // ¸¸¾à ÀÔ·Â¹ŞÀº »çÀÌÁî°¡ dsizeº¸´Ù ÀÛ¾Æµµ 4size·Î »ı¼º
     if (size <= DSIZE)
         asize = 2 * DSIZE;
 
-    // 2ì˜ ë°°ìˆ˜(Dsize)ë¡œ ìƒì„±
+    // 2ÀÇ ¹è¼ö(Dsize)·Î »ı¼º
     else
         asize = DSIZE * ((size + (DSIZE) + (DSIZE - 1)) / DSIZE);
-    // ë“¤ì–´ê°ˆ free ë¸”ë¡ì´ ìˆë‹¤ë©´ ë„£ì–´ì¤€ë‹¤.
+    // µé¾î°¥ free ºí·ÏÀÌ ÀÖ´Ù¸é ³Ö¾îÁØ´Ù.
     if ((bp = find_fit(asize)) != NULL)
     {
         Cut_Connection(bp);
@@ -209,9 +225,9 @@ void *mm_malloc(size_t size)
         return bp;
     }
 
-    // ë§Œì•½ chunksizeë¥¼ ë„˜ê¸´ ì‚¬ì´ì¦ˆë¼ë©´
+    // ¸¸¾à chunksize¸¦ ³Ñ±ä »çÀÌÁî¶ó¸é
     extendsize = MAX(asize, CHUNKSIZE);
-    // ë„˜ê¸´ ì‚¬ì´ì¦ˆë§Œí¼ì˜ í™ì„ í• ë‹¹ë°›ìŒ
+    // ³Ñ±ä »çÀÌÁî¸¸Å­ÀÇ ÈüÀ» ÇÒ´ç¹ŞÀ½
     // printf("no space -> extend heap\n");
     if ((bp = extend_heap(extendsize / WSIZE)) == NULL)
         return NULL;
@@ -229,7 +245,7 @@ static void *find_fit(size_t asize)
     // printf("heaplistp: %p\n", heap_listp);
     // printf("NEXT of heaplistp : %p\n", bp);
     // printf("nextbp : %p\n", GET(NEXT(bp)));
-    // bp ì²˜ìŒë¶€í„° ë¸”ë¡ë‹¨ìœ„ë¡œ forë¬¸ 0(epilogue)
+    // bp Ã³À½ºÎÅÍ ºí·Ï´ÜÀ§·Î for¹® 0(epilogue)
     while (GET(NEXT(bp)) != NULL)
     {
         // printf("%p, %p/n", bp, NEXT(bp));
@@ -251,11 +267,11 @@ static void *find_fit(size_t asize)
 static void place(void *bp, size_t asize)
 {
     // printf("place, bp : %p\n", bp);
-    // í—¤ë”ì˜ ì‚¬ì´ì¦ˆë¥¼ ì½ì–´ì˜´
+    // Çì´õÀÇ »çÀÌÁî¸¦ ÀĞ¾î¿È
     size_t csize = GET_SIZE(HDRP(bp));
     // printf("csize:%d\n", csize);
-    // prev, nextê°€ í•„ìš”í•˜ë¯€ë¡œ ìµœì†Œ ë¶„ë¦¬ ì‚¬ì´ì¦ˆë¥¼ 6ìœ¼ë¡œ í•´ì¤€ë‹¤.
-    // ì‚½ì…í•˜ê³  ìë¦¬ê°€ ë‚¨ìœ¼ë©´ SPLIT í•´ì¤€ë‹¤.
+    // prev, next°¡ ÇÊ¿äÇÏ¹Ç·Î ÃÖ¼Ò ºĞ¸® »çÀÌÁî¸¦ 6À¸·Î ÇØÁØ´Ù.
+    // »ğÀÔÇÏ°í ÀÚ¸®°¡ ³²À¸¸é SPLIT ÇØÁØ´Ù.
     if ((csize - asize) >= (4 * WSIZE))
     {
         // printf("after place, remain block\n");
@@ -268,11 +284,11 @@ static void place(void *bp, size_t asize)
 
         PUT(PREV(bp), 0);
         PUT(NEXT(bp), 0);
-        // prologueì˜ ë‹¤ìŒ ê°€ìš© ë¸”ë¡ë¶€í„° ì‹œì‘í•œë‹¤.
+        // prologueÀÇ ´ÙÀ½ °¡¿ë ºí·ÏºÎÅÍ ½ÃÀÛÇÑ´Ù.
         void *next_bp = compare(bp, GET(NEXT(heap_listp)));
         Insert_Block(bp, next_bp);
     }
-    // ë”± ë§ëŠ”ë‹¤ë©´ ê·¸ëƒ¥ ë„£ì–´ì¤€ë‹¤.
+    // µü ¸Â´Â´Ù¸é ±×³É ³Ö¾îÁØ´Ù.
     else
     {
         // printf("no remained\n");
@@ -286,21 +302,22 @@ static void place(void *bp, size_t asize)
 void mm_free(void *bp)
 {
     // printf("free<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< : %p\n", bp);
-    // í—¤ë”ì˜ ì‚¬ì´ì¦ˆë¥¼ ì½ì–´ì˜´
+    // Çì´õÀÇ »çÀÌÁî¸¦ ÀĞ¾î¿È
     size_t size = GET_SIZE(HDRP(bp));
 
-    // í—¤ë”ì— free ì…ë ¥
+    // Çì´õ¿¡ free ÀÔ·Â
     PUT(HDRP(bp), PACK(size, 0));
-    // í‘¸í„°ì— free ì…ë ¥
+    // ÇªÅÍ¿¡ free ÀÔ·Â
     PUT(FTRP(bp), PACK(size, 0));
     PUT(PREV(bp), 0);
     PUT(NEXT(bp), 0);
 
-    // coalesce ì‹œì¼œì£¼ê³  ë³‘í•©ëœ ê°€ìš© ë¸”ë¡ì˜ bp ë°›ì•„ì˜´
+    // coalesce ½ÃÄÑÁÖ°í º´ÇÕµÈ °¡¿ë ºí·ÏÀÇ bp ¹Ş¾Æ¿È
     void *new_bp = coalesce(bp);
 }
 
-// compareëŠ” ë°˜í™˜ëœ ë¸”ë¡ì˜ í¬ê¸°ì™€ ì—°ê²° ë¦¬ìŠ¤íŠ¸ ìƒì˜ ë¸”ë¡ê³¼ ë¹„êµí•œë‹¤.
+//***** ÇÔ¼öµéÀ» ±²ÀåÈ÷ ±ò²ûÇÏ°Ô Àß Â¥½Ã´Â °Í °°½À´Ï´Ù! ÇÑ¼ö ¹è¿ì°í °©´Ï´Ù.
+// compare´Â ¹İÈ¯µÈ ºí·ÏÀÇ Å©±â¿Í ¿¬°á ¸®½ºÆ® »óÀÇ ºí·Ï°ú ºñ±³ÇÑ´Ù.
 void *compare(void *bp, void *next_bp)
 {
     // printf("compare, next_bp : %p\n", next_bp);
@@ -314,46 +331,47 @@ void *compare(void *bp, void *next_bp)
         // printf("next_bp : %p\n", next_bp);
     }
 
-    // ë‹¤ìŒ ìë¦¬ì— next_bpê°€ ì˜¨ë‹¤ëŠ” ëœ»ì´ë‹¤
+    // ´ÙÀ½ ÀÚ¸®¿¡ next_bp°¡ ¿Â´Ù´Â ¶æÀÌ´Ù
     return next_bp;
 }
 
-// ìƒˆë¡œìš´ ê°€ìš© ë¸”ë¡ì„ next_bpì˜ PREVì— ì´ì–´ì£¼ê¸° ìœ„í•œ ì‘ì—…. 
+//***** ¿¬°á¸®½ºÆ®¿¡ ¾Õ µÚ¿¡ ¹Ì¸® ºí·ÏÀ» ³Ö¾îµÎ¾î¼­ ±×·±Áö ±²ÀåÈ÷ ±ò²ûÇÏ³×¿ä. 
+// »õ·Î¿î °¡¿ë ºí·ÏÀ» next_bpÀÇ PREV¿¡ ÀÌ¾îÁÖ±â À§ÇÑ ÀÛ¾÷. 
 void Insert_Block(void *new_bp, void *next_bp)
 {
     // printf("Insert Block, new_bp: %p, next_bp : %p\n", new_bp, next_bp);
-    // ìš°ì„  next_bpë¡œ prev_bpë¥¼ ë°›ì•„ì˜¨ë‹¤.
+    // ¿ì¼± next_bp·Î prev_bp¸¦ ¹Ş¾Æ¿Â´Ù.
     void *prev_bp = GET(PREV(next_bp));
 
-    // 1. ì „ ë¸”ë¡ì˜ nextë¥¼ í˜„ ë¸”ë¡ìœ¼ë¡œ ì´ì–´ì¤€ë‹¤.
+    // 1. Àü ºí·ÏÀÇ next¸¦ Çö ºí·ÏÀ¸·Î ÀÌ¾îÁØ´Ù.
     PUT(NEXT(prev_bp), new_bp);
 
-    // 2. í˜„ ë¸”ë¡ì˜ nextë¥¼ í›„ ë¸”ë¡ìœ¼ë¡œ ì´ì–´ì¤€ë‹¤.
+    // 2. Çö ºí·ÏÀÇ next¸¦ ÈÄ ºí·ÏÀ¸·Î ÀÌ¾îÁØ´Ù.
     PUT(NEXT(new_bp), next_bp);
 
-    // 3. í›„ ë¸”ë¡ì˜ prevë¥¼ í˜„ ë¸”ë¡ìœ¼ë¡œ ì´ì–´ì¤€ë‹¤.
+    // 3. ÈÄ ºí·ÏÀÇ prev¸¦ Çö ºí·ÏÀ¸·Î ÀÌ¾îÁØ´Ù.
     PUT(PREV(next_bp), new_bp);
 
-    // 4. í˜„ ë¸”ë¡ì˜ prevë¥¼ ì „ ë¸”ë¡ìœ¼ë¡œ ì´ì–´ì¤€ë‹¤.
+    // 4. Çö ºí·ÏÀÇ prev¸¦ Àü ºí·ÏÀ¸·Î ÀÌ¾îÁØ´Ù.
     PUT(PREV(new_bp), prev_bp);
 
-    // 5. í˜„ ë¸”ë¡ì˜ pbì„ ë‹¤ìŒ ë¸”ë¡ì˜ pbë¡œ ë°”ê¿”ì¤€ë‹¤.
-    // -> í•„ìš” ì—†ë‹¤. ì‹¤ì œë¡œëŠ” í˜„ ë¸”ë¡ì´ ì´ë™í•˜ëŠ” ê²ƒì´ ì•„ë‹ˆê¸°ë•Œë¬¸
+    // 5. Çö ºí·ÏÀÇ pbÀ» ´ÙÀ½ ºí·ÏÀÇ pb·Î ¹Ù²ãÁØ´Ù.
+    // -> ÇÊ¿ä ¾ø´Ù. ½ÇÁ¦·Î´Â Çö ºí·ÏÀÌ ÀÌµ¿ÇÏ´Â °ÍÀÌ ¾Æ´Ï±â¶§¹®
 }
 
 /* ----------------------------------- Coalesce -------------------------------------*/
-// explicitì—ì„œëŠ” prev, nextë„ ì´ì–´ì¤˜ì•¼ í•˜ë¯€ë¡œ í¬ì¸í„°ë¥¼ ë°˜í™˜í•˜ë„ë¡ í•œë‹¤.
+// explicit¿¡¼­´Â prev, nextµµ ÀÌ¾îÁà¾ß ÇÏ¹Ç·Î Æ÷ÀÎÅÍ¸¦ ¹İÈ¯ÇÏµµ·Ï ÇÑ´Ù.
 static void *coalesce(void *bp)
 {
     // printf("coal, bp : %p\n", bp);
-    // ì¢Œì¸¡ ë¸”ë¡ì´ alloc ì¸ê°€
+    // ÁÂÃø ºí·ÏÀÌ alloc ÀÎ°¡
     size_t prev_alloc = GET_ALLOC(FTRP(PREV_BLKP(bp)));
-    // ìš°ì¸¡ ë¸”ë¡ì´ alloc ì¸ê°€
+    // ¿ìÃø ºí·ÏÀÌ alloc ÀÎ°¡
     size_t next_alloc = GET_ALLOC(HDRP(NEXT_BLKP(bp)));
-    // í˜„ì¬ ë…¸ë“œì˜ ì‚¬ì´ì¦ˆ
+    // ÇöÀç ³ëµåÀÇ »çÀÌÁî
     size_t size = GET_SIZE(HDRP(bp));
 
-    // case 1 : ì¢Œ, ìš° ëª¨ë‘ í• ë‹¹ ìƒíƒœì¼ ë•Œ,	ë³‘í•©ì—†ì´ ë°˜í™˜
+    // case 1 : ÁÂ, ¿ì ¸ğµÎ ÇÒ´ç »óÅÂÀÏ ¶§,	º´ÇÕ¾øÀÌ ¹İÈ¯
     if (prev_alloc && next_alloc)
     {
         // printf("coal:no free\n");
@@ -362,20 +380,20 @@ static void *coalesce(void *bp)
         PUT(NEXT(bp), GET(NEXT(heap_listp)));
     }
 
-    // case 2 : ìš°ì¸¡ ë¸”ë¡ì´ ê°€ìš© ìƒíƒœì¼ ë•Œ :
+    // case 2 : ¿ìÃø ºí·ÏÀÌ °¡¿ë »óÅÂÀÏ ¶§ :
     else if (prev_alloc && !next_alloc)
     {
         // printf("coal:right_free\n");
-        // ìš°ì¸¡ ë¸”ë¡ì˜ prevì™€ next ì •ë³´ë¥¼ ì €ì¥í•œë‹¤.
+        // ¿ìÃø ºí·ÏÀÇ prev¿Í next Á¤º¸¸¦ ÀúÀåÇÑ´Ù.
         void *right_bp = NEXT_BLKP(bp);
         // void *old_prev = GET(PREV(right_bp));
         // void *old_next = GET(NEXT(right_bp));
         Cut_Connection(right_bp);
 
-        // ë‹¤ìŒ ë¸”ë¡ì˜ ì‚¬ì´ì¦ˆê¹Œì§€ í•©ì³ì„œ freeì‹œí‚´
+        // ´ÙÀ½ ºí·ÏÀÇ »çÀÌÁî±îÁö ÇÕÃÄ¼­ free½ÃÅ´
         size += GET_SIZE(HDRP(NEXT_BLKP(bp)));
 
-        // ë¸”ë¡ ì •ë³´ ê°±ì‹ 
+        // ºí·Ï Á¤º¸ °»½Å
         PUT(HDRP(bp), PACK(size, 0));
         PUT(FTRP(bp), PACK(size, 0));
         PUT(PREV(bp), 0);
@@ -384,8 +402,8 @@ static void *coalesce(void *bp)
         PUT(NEXT(bp), GET(NEXT(heap_listp)));
     }
 
-    // case 3 : ì¢Œì¸¡ ë¸”ë¡ë§Œ ê°€ìš© ë¸”ë¡ì¼ ë•Œ,
-    // ì „ì˜ ì‚¬ì´ì¦ˆê¹Œì§€ í•©ì³ì„œ freeì‹œí‚´
+    // case 3 : ÁÂÃø ºí·Ï¸¸ °¡¿ë ºí·ÏÀÏ ¶§,
+    // ÀüÀÇ »çÀÌÁî±îÁö ÇÕÃÄ¼­ free½ÃÅ´
     else if (!prev_alloc && next_alloc)
     {
         // printf("coal:left_free\n");
@@ -399,11 +417,11 @@ static void *coalesce(void *bp)
         PUT(NEXT(bp), GET(NEXT(heap_listp)));
     }
 
-    // case 4 : ì• ë’¤ ë‹¤ free
+    // case 4 : ¾Õ µÚ ´Ù free
     else
     {
         // printf("coal:both free\n");
-        // ì¼ë‹¨ í¬ê¸° ë¹„êµ
+        // ÀÏ´Ü Å©±â ºñ±³
         size_t left_size = GET_SIZE(HDRP(PREV_BLKP(bp)));
         size_t right_size = GET_SIZE(FTRP(NEXT_BLKP(bp)));
 
@@ -433,26 +451,26 @@ void *mm_realloc(void *bp, size_t size)
     void *old_bp = bp;
     void *new_bp;
     size_t copySize;
-    // ë‹¤ë¥¸ë°ë‹¤ê°€ ë‹¤ì‹œ í• ë‹¹ ë°›ê¸°
+    // ´Ù¸¥µ¥´Ù°¡ ´Ù½Ã ÇÒ´ç ¹Ş±â
     new_bp = mm_malloc(size);
-    // ì‹¤íŒ¨í•˜ë©´ NULL ë¦¬í„´
+    // ½ÇÆĞÇÏ¸é NULL ¸®ÅÏ
     if (new_bp == NULL)
         return NULL;
 
-    // ì›ë˜ ë¸”ë¡ì˜ ì‚¬ì´ì¦ˆ
+    // ¿ø·¡ ºí·ÏÀÇ »çÀÌÁî
     copySize = GET_SIZE(HDRP(old_bp));
 
-    // ìš”ì²­í•œ ì‚¬ì´ì¦ˆê°€ ì‘ë‹¤ë©´ ì‘ì€ì‚¬ì´ì¦ˆë¡œ ì¹´í”¼
+    // ¿äÃ»ÇÑ »çÀÌÁî°¡ ÀÛ´Ù¸é ÀÛÀº»çÀÌÁî·Î Ä«ÇÇ
     if (size < copySize)
         copySize = size;
     memcpy(new_bp, old_bp, copySize);
-    // ê¸°ì¡´ ì‚¬ì´ì¦ˆëŠ” ì‚­ì œ
+    // ±âÁ¸ »çÀÌÁî´Â »èÁ¦
     mm_free(old_bp);
     return new_bp;
 }
 
 /* ----------------------------------- Missing_Connect  -------------------------------------*/
-// bpì˜ ë¸”ë¡ PREV, NEXTë¥¼ ëŠì–´ì£¼ê³ , PREV ë¸”ë¡ê³¼ NEXT ë¸”ë¡ì„ ì´ì–´ì¤€ë‹¤.
+// bpÀÇ ºí·Ï PREV, NEXT¸¦ ²÷¾îÁÖ°í, PREV ºí·Ï°ú NEXT ºí·ÏÀ» ÀÌ¾îÁØ´Ù.
 void Cut_Connection(void *bp)
 {
 
@@ -467,4 +485,3 @@ void Cut_Connection(void *bp)
     PUT(NEXT(bp), 0);
     return;
 }
-
