@@ -84,7 +84,7 @@ static void *coalesce(void *bp);
 static void *find_fit(size_t asize);
 static void place(void *bp, size_t asize);
 static char *heap_listp;
-void *compare(size_t size, void *next_bp);
+void *compare(void *bp, void *next_bp);
 void Insert_Block(void *new_bp, void *next_bp);
 void Cut_Connection(void *bp);
 void mm_free(void *bp);
@@ -268,7 +268,7 @@ static void place(void *bp, size_t asize)
         PUT(PREV(bp), 0);
         PUT(NEXT(bp), 0);
         // prologue의 다음 가용 블록부터 시작한다.
-        void *next_bp = compare(csize - asize, GET(NEXT(heap_listp)));
+        void *next_bp = compare(bp, GET(NEXT(heap_listp)));
         Insert_Block(bp, next_bp);
     }
     // 딱 맞는다면 그냥 넣어준다.
@@ -300,12 +300,12 @@ void mm_free(void *bp)
 }
 
 // compare는 반환된 블록의 크기와 연결 리스트 상의 블록과 비교한다.
-void *compare(size_t size, void *next_bp)
+void *compare(void *bp, void *next_bp)
 {
     // printf("compare, next_bp : %p\n", next_bp);
     while (!(GET(NEXT(next_bp)) == NULL))
     {
-        if (GET_SIZE(HDRP(next_bp)) > size)
+        if (next_bp > bp)
         {
             return next_bp;
         }
@@ -421,7 +421,7 @@ static void *coalesce(void *bp)
 
     }
 
-    void* next_bp = compare(size, GET(NEXT(heap_listp)));
+    void* next_bp = compare(bp, GET(NEXT(heap_listp)));
     Insert_Block(bp, next_bp);
     return bp;
 }

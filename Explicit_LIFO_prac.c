@@ -84,7 +84,7 @@ static void *coalesce(void *bp);
 static void *find_fit(size_t asize);
 static void place(void *bp, size_t asize);
 static char *heap_listp;
-void *compare(size_t size, void *next_bp);
+// void *compare(void *bp, void *next_bp);
 void Insert_Block(void *new_bp, void *next_bp);
 void Cut_Connection(void *bp);
 void mm_free(void *bp);
@@ -170,8 +170,8 @@ static void *extend_heap(size_t words)
     PUT(FTRP(EBP), PACK(DSIZE * 2, 1));
     // extend를 실행했다는 것은, extend size보다 큰 블록이 없다는 뜻이다.
     PUT(NEXT(last_free), EBP);
-    PUT(PREV(bp), 0);
-    PUT(NEXT(bp), 0);
+    // PUT(PREV(bp), 0);
+    // PUT(NEXT(bp), 0);
 
     // 만약 전 block이 프리였다면 합친다.
     // return coalesce(bp);
@@ -265,11 +265,11 @@ static void place(void *bp, size_t asize)
         PUT(HDRP(bp), PACK(csize - asize, 0));
         PUT(FTRP(bp), PACK(csize - asize, 0));
 
-        PUT(PREV(bp), 0);
-        PUT(NEXT(bp), 0);
+        // PUT(PREV(bp), 0);
+        // PUT(NEXT(bp), 0);
         // prologue의 다음 가용 블록부터 시작한다.
-        void *next_bp = compare(csize - asize, GET(NEXT(heap_listp)));
-        Insert_Block(bp, next_bp);
+        // void *next_bp = compare(bp, GET(NEXT(heap_listp)));
+        Insert_Block(bp, GET(NEXT(heap_listp)));
     }
     // 딱 맞는다면 그냥 넣어준다.
     else
@@ -292,30 +292,30 @@ void mm_free(void *bp)
     PUT(HDRP(bp), PACK(size, 0));
     // 푸터에 free 입력
     PUT(FTRP(bp), PACK(size, 0));
-    PUT(PREV(bp), 0);
-    PUT(NEXT(bp), 0);
+    // PUT(PREV(bp), 0);
+    // PUT(NEXT(bp), 0);
 
     // coalesce 시켜주고 병합된 가용 블록의 bp 받아옴
     void *new_bp = coalesce(bp);
 }
 
 // compare는 반환된 블록의 크기와 연결 리스트 상의 블록과 비교한다.
-void *compare(size_t size, void *next_bp)
-{
-    // printf("compare, next_bp : %p\n", next_bp);
-    while (!(GET(NEXT(next_bp)) == NULL))
-    {
-        if (GET_SIZE(HDRP(next_bp)) > size)
-        {
-            return next_bp;
-        }
-        next_bp = GET(NEXT(next_bp));
-        // printf("next_bp : %p\n", next_bp);
-    }
+// void *compare(void *bp, void *next_bp)
+// {
+//     // printf("compare, next_bp : %p\n", next_bp);
+//     while (!(GET(NEXT(next_bp)) == NULL))
+//     {
+//         if (next_bp > bp)
+//         {
+//             return next_bp;
+//         }
+//         next_bp = GET(NEXT(next_bp));
+//         // printf("next_bp : %p\n", next_bp);
+//     }
 
-    // 다음 자리에 next_bp가 온다는 뜻이다
-    return next_bp;
-}
+//     // 다음 자리에 next_bp가 온다는 뜻이다
+//     return next_bp;
+// }
 
 // new_bp가 아무것도 안 이어졌을 때,
 // prev와 next 사이에 이어주는 작업
@@ -357,8 +357,8 @@ static void *coalesce(void *bp)
     if (prev_alloc && next_alloc)
     {
         // printf("coal:no free\n");
-        PUT(PREV(bp), 0);
-        PUT(NEXT(bp), 0);
+        // PUT(PREV(bp), 0);
+        // PUT(NEXT(bp), 0);
         PUT(NEXT(bp), GET(NEXT(heap_listp)));
     }
 
@@ -378,8 +378,8 @@ static void *coalesce(void *bp)
         // 블록 정보 갱신
         PUT(HDRP(bp), PACK(size, 0));
         PUT(FTRP(bp), PACK(size, 0));
-        PUT(PREV(bp), 0);
-        PUT(NEXT(bp), 0);
+        // PUT(PREV(bp), 0);
+        // PUT(NEXT(bp), 0);
         // PUT(PREV(bp), old_prev);
         PUT(NEXT(bp), GET(NEXT(heap_listp)));
     }
@@ -394,8 +394,8 @@ static void *coalesce(void *bp)
         PUT(HDRP(PREV_BLKP(bp)), PACK(size, 0));
         bp = PREV_BLKP(bp);
         Cut_Connection(bp);
-        PUT(PREV(bp), 0);
-        PUT(NEXT(bp), 0);
+        // PUT(PREV(bp), 0);
+        // PUT(NEXT(bp), 0);
         PUT(NEXT(bp), GET(NEXT(heap_listp)));
     }
 
@@ -414,15 +414,15 @@ static void *coalesce(void *bp)
         size += GET_SIZE(HDRP(PREV_BLKP(bp))) + GET_SIZE(FTRP(NEXT_BLKP(bp)));
         PUT(HDRP(PREV_BLKP(bp)), PACK(size, 0));
         PUT(FTRP(NEXT_BLKP(bp)), PACK(size, 0));
-        PUT(PREV(bp), 0);
-        PUT(NEXT(bp), 0);
+        // PUT(PREV(bp), 0);
+        // PUT(NEXT(bp), 0);
         bp = left_bp;
         PUT(NEXT(bp), GET(NEXT(heap_listp)));
 
     }
 
-    void* next_bp = compare(size, GET(NEXT(heap_listp)));
-    Insert_Block(bp, next_bp);
+    // void* next_bp = compare(bp, GET(NEXT(heap_listp)));
+    Insert_Block(bp, GET(NEXT(heap_listp)));
     return bp;
 }
 
@@ -462,8 +462,8 @@ void Cut_Connection(void *bp)
     PUT(PREV(next_bp), prev_bp);
 
 
-    PUT(PREV(bp), 0);
-    PUT(NEXT(bp), 0);
+    // PUT(PREV(bp), 0);
+    // PUT(NEXT(bp), 0);
     return;
 }
 
